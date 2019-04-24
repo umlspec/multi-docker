@@ -1,0 +1,26 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t awaxadmin/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run awaxadmin/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t awaxadmin/multi-client ./client
+  - docker build -t awaxadmin/multi-nginx ./nginx
+  - docker build -t awaxadmin/multi-server ./server
+  - docker build -t awaxadmin/multi-worker ./worker
+
+ #login to the Docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+
+  # take those images and push them to Docker hub
+  - docker push awaxadmin/multi-client
+  - docker push awaxadmin/multi-nginx
+  - docker push awaxadmin/multi-server
+  - docker push awaxadmin/multi-worker
+
+ 
